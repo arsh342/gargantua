@@ -106,8 +106,11 @@ body {
 .hud.readout {
   bottom: clamp(16px, 3vh, 30px);
   left: clamp(16px, 3vw, 36px);
+  max-width: min(62vw, 640px);
   display: flex;
-  gap: 22px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+  column-gap: 20px;
   font-variant-numeric: tabular-nums;
 }
 

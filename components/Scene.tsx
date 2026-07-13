@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
 import Gargantua from "./Gargantua";
+import SkyEnvironment from "./SkyEnvironment";
 import Effects from "./Effects";
 import Hud from "./Hud";
 import { sim, hudBridge, QUALITY, type Quality } from "@/lib/sim";
@@ -12,6 +14,8 @@ export default function Scene() {
   const [quality, setQuality] = useState<Quality>(() =>
     typeof window !== "undefined" && window.innerWidth < 720 ? "low" : "med"
   );
+  const [sky, setSky] = useState<THREE.CubeTexture | null>(null);
+  const onSkyReady = useCallback((tex: THREE.CubeTexture) => setSky(tex), []);
 
   useEffect(() => {
     sim.steps = QUALITY[quality].steps;
@@ -40,7 +44,8 @@ export default function Scene() {
         gl={{ antialias: false, powerPreference: "high-performance" }}
         camera={{ fov: 55, near: 0.1, far: 200, position: [5, 3.6, 25] }}
       >
-        <Gargantua />
+        <SkyEnvironment onReady={onSkyReady} />
+        {sky && <Gargantua skyTexture={sky} />}
         <Effects />
         <OrbitControls
           makeDefault

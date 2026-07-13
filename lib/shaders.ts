@@ -42,6 +42,7 @@ uniform float uSpin;    /* a, rs units */
 uniform float uHorizon; /* r+ */
 uniform float uDiskIn;  /* prograde ISCO, Boyer-Lindquist r */
 uniform float uTNorm;   /* Novikov-Thorne temperature normalization, K */
+uniform samplerCube uSky;
 
 const float M        = 0.5;
 const float SQRT_M   = 0.70710678;
@@ -120,36 +121,14 @@ float hamS(vec3 pos, vec3 pv, float E) {
   return f * phi * phi;
 }
 
-/* ---------- background sky ---------- */
+/* ---------- background sky ----------
+ * A real three.js scene (nebula dome + a 3D star point-cloud, see
+ * SkyEnvironment.tsx) is rendered once into this cubemap. Sampling it with
+ * the escaped photon's bent direction is what puts stars and nebula gas
+ * into the lensed Einstein-ring halo correctly — the bending happens before
+ * this lookup, so the background is warped exactly like the disk is. */
 vec3 sky(vec3 d) {
-  vec3 col = vec3(0.0);
-  vec2 sph = vec2(atan(d.z, d.x), asin(clamp(d.y, -1.0, 1.0)));
-
-  /* the sky is near-black: only a whisper of galactic dust */
-  vec3 bandN = normalize(vec3(0.32, 0.86, 0.40));
-  float band = exp(-pow(dot(d, bandN), 2.0) * 14.0);
-  float neb = fbm(sph * vec2(3.0, 5.0) + 7.7);
-  col += vec3(0.016, 0.019, 0.030) * band * (0.3 + 1.6 * neb * neb);
-  float dust = fbm(sph * vec2(6.0, 9.5) + 2.2);
-  col += vec3(0.026, 0.019, 0.014) * band * dust * dust * dust;
-
-  /* three star layers */
-  for (int l = 0; l < 3; l++) {
-    float scale = (l == 0) ? 40.0 : ((l == 1) ? 85.0 : 160.0);
-    vec2 uv = sph * vec2(scale, scale * 0.62);
-    vec2 id = floor(uv);
-    vec2 gv = fract(uv) - 0.5;
-    float h = hash21(id + float(l) * 77.7);
-    if (h > 0.93) {
-      vec2 off = (vec2(hash21(id + 1.3), hash21(id + 2.7)) - 0.5) * 0.72;
-      float core = smoothstep(0.08, 0.0, length(gv - off));
-      float mag = (h - 0.93) / 0.07;
-      /* stellar population: real blackbody tints, 3000 K M-dwarfs to A stars */
-      vec3 tint = blackbody(mix(3000.0, 11000.0, hash21(id + 9.1)));
-      col += tint * core * mag * mag * (0.5 + 0.8 * band) * 1.5;
-    }
-  }
-  return col;
+  return textureCube(uSky, d).rgb;
 }
 
 /* ---------- Novikov–Thorne effective temperature ----------
