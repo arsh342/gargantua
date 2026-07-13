@@ -1,49 +1,202 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html {
-  height: 100%;
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --void: #030307;
+  --mist: #cfc9c4;
+  --mist-dim: #8e8880;
+  --ember: #ffb066;
+  --line: rgba(255, 176, 102, 0.18);
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 * {
   box-sizing: border-box;
-  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
   margin: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+body {
+  background: var(--void);
+  color: var(--mist);
+  font-family: var(--mono);
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+.stage {
+  position: fixed;
+  inset: 0;
+}
+
+.stage canvas {
+  touch-action: none;
+  cursor: grab;
+}
+
+.stage canvas:active {
+  cursor: grabbing;
+}
+
+.boot {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mist-dim);
+}
+
+/* ---------- HUD ---------- */
+
+.hud {
+  position: fixed;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hud.title {
+  top: clamp(16px, 3vh, 32px);
+  left: clamp(16px, 3vw, 36px);
+}
+
+.hud.title h1 {
+  margin: 0;
+  font-family: "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  font-weight: 200;
+  font-size: clamp(22px, 3.4vw, 38px);
+  letter-spacing: 0.42em;
+  color: #f4ede6;
+  text-shadow: 0 0 24px rgba(255, 154, 60, 0.25);
+}
+
+.hud.title .sub {
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--mist-dim);
+}
+
+.hud.title .sub b {
+  color: var(--ember);
+  font-weight: 400;
+}
+
+.hud.note {
+  top: clamp(16px, 3vh, 32px);
+  right: clamp(16px, 3vw, 36px);
+  max-width: 240px;
+  text-align: right;
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--mist-dim);
+  letter-spacing: 0.03em;
+}
+
+.hud.note em {
+  color: var(--mist);
+  font-style: normal;
+}
+
+.hud.readout {
+  bottom: clamp(16px, 3vh, 30px);
+  left: clamp(16px, 3vw, 36px);
+  display: flex;
+  gap: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud.readout .cell {
+  border-left: 1px solid var(--line);
+  padding-left: 10px;
+}
+
+.hud.readout .k {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mist-dim);
+  margin-bottom: 4px;
+}
+
+.hud.readout .v {
+  font-size: 14px;
+  color: #efe8e0;
+}
+
+.hud.readout .v small {
+  color: var(--mist-dim);
+  font-size: 10px;
+}
+
+.hud.controls {
+  bottom: clamp(16px, 3vh, 30px);
+  right: clamp(16px, 3vw, 36px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.hud.controls .btnrow {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.hud.controls .btnrow button {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 6px 12px;
+  background: rgba(3, 3, 7, 0.55);
+  color: var(--mist-dim);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+}
+
+.hud.controls .btnrow button:hover {
+  color: var(--mist);
+}
+
+.hud.controls .btnrow button:focus-visible {
+  outline: 1px solid var(--ember);
+  outline-offset: 2px;
+}
+
+.hud.controls .btnrow button.on {
+  color: var(--ember);
+  border-color: rgba(255, 176, 102, 0.55);
+}
+
+.hud.controls .hint {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist-dim);
+}
+
+.hud.controls .hint span {
+  color: var(--mist);
+}
+
+@media (max-width: 720px) {
+  .hud.note {
+    display: none;
+  }
+  .hud.readout {
+    gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud.controls .btnrow button {
+    transition: none;
   }
 }
